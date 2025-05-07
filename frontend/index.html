@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrivacyGuard - Network Privacy Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-shield-alt text-blue-600 text-2xl mr-2"></i>
+                    <span class="font-bold text-xl text-gray-800">PrivacyGuard</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="reports.html" class="text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-chart-line mr-1"></i>
+                        Reports
+                    </a>
+                    <button id="refreshBtn" class="text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button id="settingsBtn" class="text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Status Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Network Status Card -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Network Status</h3>
+                    <i class="fas fa-network-wired text-blue-600"></i>
+                </div>
+                <div id="networkStatus" class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Current Interface:</span>
+                        <span id="currentInterface" class="font-medium">Loading...</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">IP Address:</span>
+                        <span id="ipAddress" class="font-medium">Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Privacy Status Card -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Privacy Status</h3>
+                    <i class="fas fa-user-shield text-blue-600"></i>
+                </div>
+                <div id="privacyStatus" class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">VPN Status:</span>
+                        <span id="vpnStatus" class="font-medium">Disabled</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Proxy Status:</span>
+                        <span id="proxyStatus" class="font-medium">Disabled</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Tor Status:</span>
+                        <span id="torStatus" class="font-medium">Disabled</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Automation Status Card -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Automation</h3>
+                    <i class="fas fa-robot text-blue-600"></i>
+                </div>
+                <div id="automationStatus" class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Status:</span>
+                        <span id="autoStatus" class="font-medium">Enabled</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Active Rules:</span>
+                        <span id="activeRules" class="font-medium">2</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Interfaces -->
+        <div class="bg-white rounded-lg shadow mb-6">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Network Interfaces</h3>
+                    <button id="addInterfaceBtn" class="text-blue-600 hover:text-blue-700">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div id="interfacesList" class="space-y-4">
+                    <!-- Interfaces will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Logs -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Activity Logs</h3>
+                    <button id="clearLogsBtn" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+                <div id="activityLogs" class="space-y-2 max-h-60 overflow-y-auto">
+                    <!-- Logs will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Settings</h3>
+                <button id="closeSettingsBtn" class="text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <!-- Automation Settings -->
+                <div>
+                    <label class="flex items-center space-x-3 mb-3">
+                        <input type="checkbox" id="automationEnabled" class="form-checkbox h-5 w-5 text-blue-600">
+                        <span class="text-gray-700 font-medium">Enable Automation</span>
+                    </label>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Check Interval (seconds)</label>
+                        <input type="number" id="checkInterval" class="form-input w-full rounded-md border-gray-300" value="60">
+                    </div>
+                </div>
+
+                <!-- Privacy Settings -->
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Privacy Settings</h4>
+                    <label class="flex items-center space-x-3 mb-3">
+                        <input type="checkbox" id="vpnEnabled" class="form-checkbox h-5 w-5 text-blue-600">
+                        <span class="text-gray-700">Enable VPN</span>
+                    </label>
+                    <label class="flex items-center space-x-3 mb-3">
+                        <input type="checkbox" id="proxyEnabled" class="form-checkbox h-5 w-5 text-blue-600">
+                        <span class="text-gray-700">Enable Proxy</span>
+                    </label>
+                    <label class="flex items-center space-x-3">
+                        <input type="checkbox" id="torEnabled" class="form-checkbox h-5 w-5 text-blue-600">
+                        <span class="text-gray-700">Enable Tor</span>
+                    </label>
+                </div>
+            </div>
+            <div class="mt-6">
+                <button id="saveSettingsBtn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>
