@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrivacyGuard - Advanced Reports</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center">
+                        <i class="fas fa-shield-alt text-blue-600 text-2xl mr-2"></i>
+                        <span class="font-bold text-xl text-gray-800">PrivacyGuard</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="refreshBtn" class="text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header Banner -->
+    <header class="relative">
+        <img src="https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg" 
+             alt="Analytics Banner" 
+             class="w-full h-64 object-cover">
+        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+        <div class="absolute inset-0 flex items-center justify-center">
+            <h1 class="text-4xl text-white font-bold">Advanced Reporting & Analytics</h1>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Network Events</h3>
+                    <i class="fas fa-network-wired text-blue-600"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900" id="totalNetworkEvents">-</div>
+                <div class="text-sm text-gray-500">Total interface toggles</div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Privacy Events</h3>
+                    <i class="fas fa-user-shield text-blue-600"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900" id="totalPrivacyEvents">-</div>
+                <div class="text-sm text-gray-500">VPN/Proxy/Tor actions</div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Automation Events</h3>
+                    <i class="fas fa-robot text-blue-600"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900" id="totalAutomationEvents">-</div>
+                <div class="text-sm text-gray-500">Rules executed</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="space-y-8">
+            <!-- Network Activity Chart -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Network Activity Timeline</h2>
+                <div class="relative w-full bg-white p-4 rounded-lg" style="min-height: 300px;">
+                    <canvas id="networkChart" class="w-full h-full"></canvas>
+                </div>
+            </div>
+
+            <!-- Privacy Events Chart -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Privacy Events Distribution</h2>
+                <div class="relative w-full bg-white p-4 rounded-lg" style="min-height: 300px;">
+                    <canvas id="privacyChart" class="w-full h-full"></canvas>
+                </div>
+            </div>
+
+            <!-- Automation Summary Chart -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Automation Rule Executions</h2>
+                <div class="relative w-full bg-white p-4 rounded-lg" style="min-height: 300px;">
+                    <canvas id="automationChart" class="w-full h-full"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="reports.js"></script>
+</body>
+</html>
