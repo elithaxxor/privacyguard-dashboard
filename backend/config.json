@@ -1,0 +1,23 @@
+{
+  "preferred_interface": "Wi-Fi",
+  "fallback_interface": "Cellular",
+  "proxy": {
+    "enabled": false
+  },
+  "vpn": {
+    "enabled": true
+  },
+  "tor": {
+    "enabled": false
+  },
+  "automation": {
+    "enabled": false,
+    "check_interval": 60
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "privacyguard.log",
+    "max_size": 10485760,
+    "backup_count": 3
+  }
+}
