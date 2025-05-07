@@ -1,0 +1,33 @@
+2025-05-07 00:00:01,123 - network_manager - INFO - Successfully enabled interface Wi-Fi
+2025-05-07 00:00:02,234 - network_manager - INFO - Successfully set Wi-Fi as preferred route
+2025-05-07 00:00:10,345 - privacy_manager - INFO - VPN connection enabled
+2025-05-07 00:00:15,456 - automation - INFO - Executed rule action: switch_to_wifi
+2025-05-07 00:00:30,567 - network_manager - ERROR - Failed to toggle interface Cellular
+2025-05-07 00:01:00,678 - privacy_manager - INFO - Proxy server configured and enabled
+2025-05-07 00:01:30,789 - automation - INFO - Executed rule action: switch_to_cellular
+2025-05-07 00:02:00,890 - privacy_manager - INFO - Tor connection enabled
+2025-05-07 00:02:30,901 - network_manager - INFO - Successfully disabled interface Wi-Fi
+2025-05-07 00:03:00,012 - network_manager - INFO - Successfully enabled interface Cellular
+2025-05-07 00:03:30,123 - privacy_manager - INFO - VPN connection disabled
+2025-05-07 00:04:00,234 - automation - INFO - Executed rule action: switch_to_wifi
+2025-05-07 00:04:30,345 - privacy_manager - INFO - Proxy server disabled
+2025-05-07 00:05:00,456 - network_manager - INFO - Successfully enabled interface Wi-Fi
+2025-05-07 00:05:30,567 - privacy_manager - INFO - Tor connection disabled
+2025-05-07 00:06:00,678 - automation - INFO - Executed rule action: switch_to_cellular
+2025-05-07 00:06:30,789 - network_manager - INFO - Successfully disabled interface Cellular
+2025-05-07 00:07:00,890 - network_manager - INFO - Successfully enabled interface Wi-Fi
+2025-05-07 00:30:21,365 - app - INFO - PrivacyGuard Backend initialized successfully
+2025-05-07 00:30:38,607 - app - INFO - PrivacyGuard Backend initialized successfully
+2025-05-07 00:30:38,855 - app - INFO - PrivacyGuard Backend initialized successfully
+2025-05-07 00:31:26,807 - privacyguard - ERROR - Error generating report data: [Errno 2] No such file or directory: 'backend/privacyguard.log'
+2025-05-07 00:31:45,042 - privacyguard - ERROR - Error generating report data: [Errno 2] No such file or directory: 'backend/privacyguard.log'
+2025-05-07 00:32:15,067 - privacyguard - ERROR - Error generating report data: [Errno 2] No such file or directory: 'backend/privacyguard.log'
+2025-05-07 00:33:09,894 - app - INFO - PrivacyGuard Backend initialized successfully
+2025-05-07 00:35:34,880 - app - INFO - PrivacyGuard Backend initialized successfully
+2025-05-07 00:35:35,129 - app - INFO - PrivacyGuard Backend initialized successfully
+2025-05-07 00:35:52,586 - app - INFO - PrivacyGuard Backend initialized successfully
+2025-05-07 00:36:59,673 - app - INFO - PrivacyGuard Backend initialized successfully
+2025-05-07 00:37:22,920 - app - INFO - PrivacyGuard Backend initialized successfully
+2025-05-07 00:37:23,153 - app - INFO - PrivacyGuard Backend initialized successfully
+2025-05-07 02:15:46,257 - app - INFO - PrivacyGuard Backend initialized successfully
+2025-05-07 02:24:34,375 - app - INFO - PrivacyGuard Backend initialized successfully
