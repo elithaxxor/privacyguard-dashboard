@@ -9,6 +9,7 @@ const elements = {
     vpnStatus: document.getElementById('vpnStatus'),
     proxyStatus: document.getElementById('proxyStatus'),
     torStatus: document.getElementById('torStatus'),
+    privacyStatusContainer: document.getElementById('privacyStatus'),
     autoStatus: document.getElementById('autoStatus'),
     activeRules: document.getElementById('activeRules'),
     interfacesList: document.getElementById('interfacesList'),
@@ -20,9 +21,14 @@ const elements = {
     closeSettingsBtn: document.getElementById('closeSettingsBtn'),
     saveSettingsBtn: document.getElementById('saveSettingsBtn'),
     clearLogsBtn: document.getElementById('clearLogsBtn'),
+    themeToggleBtn: document.getElementById('themeToggleBtn'),
+    themeIcon: document.getElementById('themeIcon'),
 
     // Modal
     settingsModal: document.getElementById('settingsModal'),
+    // Logs
+    loadLogsBtn: document.getElementById('loadLogsBtn'),
+    logFilter: document.getElementById('logFilter'),
 
     // Settings form elements
     automationEnabled: document.getElementById('automationEnabled'),
@@ -63,6 +69,9 @@ const api = {
     }
 };
 
+// Toast container
+const toastContainer = document.getElementById('toastContainer');
+
 // UI Update Functions
 const ui = {
     updateNetworkStatus(data) {
@@ -79,6 +88,20 @@ const ui = {
         elements.vpnStatus.className = config.vpn.enabled ? 'font-medium text-green-600' : 'font-medium text-red-600';
         elements.proxyStatus.className = config.proxy.enabled ? 'font-medium text-green-600' : 'font-medium text-red-600';
         elements.torStatus.className = config.tor.enabled ? 'font-medium text-green-600' : 'font-medium text-red-600';
+        // Update toggle buttons for privacy features
+        ['vpn', 'proxy', 'tor'].forEach(feature => {
+            const enabled = config[feature].enabled;
+            const btn = document.querySelector(`.toggle-privacy[data-feature="${feature}"]`);
+            if (btn) {
+                btn.textContent = enabled ? 'Disable' : 'Enable';
+                btn.dataset.action = enabled ? 'disable' : 'enable';
+                if (enabled) {
+                    btn.className = 'toggle-privacy px-3 py-1 rounded-md bg-red-100 text-red-600';
+                } else {
+                    btn.className = 'toggle-privacy px-3 py-1 rounded-md bg-green-100 text-green-600';
+                }
+            }
+        });
     },
 
     updateAutomationStatus(data) {
@@ -137,9 +160,26 @@ const ui = {
         
         elements.activityLogs.insertBefore(logEl, elements.activityLogs.firstChild);
     },
+    showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        const bgColors = {
+            info: 'bg-blue-500',
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            warning: 'bg-yellow-500'
+        };
+        toast.className = `${bgColors[type] || bgColors.info} text-white px-4 py-2 rounded shadow-lg max-w-xs opacity-90`;
+        toast.textContent = message;
+        toastContainer.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('transition', 'opacity-0');
+            toast.addEventListener('transitionend', () => toast.remove());
+        }, 4000);
+    },
 
     showError(message) {
         this.addLogEntry(message, 'error');
+        this.showToast(message, 'error');
     }
 };
 
@@ -158,8 +198,8 @@ const handlers = {
             ui.updatePrivacyStatus(config.config);
             ui.updateAutomationStatus(automation);
             ui.updateInterfacesList(interfaces.interfaces);
-            
             ui.addLogEntry('Dashboard refreshed successfully', 'success');
+            ui.showToast('Dashboard refreshed', 'success');
         } catch (error) {
             ui.showError('Failed to refresh dashboard: ' + error.message);
         }
@@ -175,11 +215,27 @@ const handlers = {
             await api.post(`/interface/${interfaceName}/toggle`, {
                 enable: action === 'enable'
             });
-            
             ui.addLogEntry(`${interfaceName} ${action}d successfully`, 'success');
+            ui.showToast(`${interfaceName} ${action}d`, 'success');
             await handlers.refreshData();
         } catch (error) {
             ui.showError(`Failed to ${action} ${interfaceName}: ${error.message}`);
+        }
+    },
+    // Toggle privacy feature (VPN, proxy, Tor)
+    async togglePrivacy(event) {
+        if (!event.target.matches('.toggle-privacy')) return;
+        const feature = event.target.dataset.feature;
+        const action = event.target.dataset.action;
+        try {
+            const data = {};
+            data[feature] = { enabled: action === 'enable' };
+            await api.post('/config', data);
+            ui.addLogEntry(`${feature.toUpperCase()} ${action}d successfully`, 'success');
+            ui.showToast(`${feature.toUpperCase()} ${action}d`, 'success');
+            await handlers.refreshData();
+        } catch (error) {
+            ui.showError(`Failed to ${action} ${feature}: ${error.message}`);
         }
     },
 
@@ -203,6 +259,7 @@ const handlers = {
         try {
             await api.post('/config', newConfig);
             ui.addLogEntry('Settings saved successfully', 'success');
+            ui.showToast('Settings saved', 'success');
             elements.settingsModal.classList.add('hidden');
             await handlers.refreshData();
         } catch (error) {
@@ -211,8 +268,51 @@ const handlers = {
     },
 
     toggleSettingsModal() {
-        elements.settingsModal.classList.toggle('hidden');
+        const modal = elements.settingsModal;
+        modal.classList.toggle('hidden');
+        const isOpen = !modal.classList.contains('hidden');
+        if (isOpen) {
+            // Focus the modal container
+            const container = modal.querySelector('div[tabindex]');
+            if (container) container.focus();
+        } else {
+            // Return focus to settings button
+            elements.settingsBtn.focus();
+        }
     }
+  ,
+  async loadServerLogs() {
+    try {
+      const res = await api.get('/logs');
+      const logs = res.logs || [];
+      elements.activityLogs.innerHTML = '';
+      logs.reverse().forEach(line => {
+        const el = document.createElement('div');
+        el.textContent = line.trim();
+        elements.activityLogs.appendChild(el);
+      });
+      ui.showToast('Server logs loaded', 'success');
+    } catch (e) {
+      ui.showError('Failed to load server logs: ' + e.message);
+    }
+  },
+  filterLogs() {
+    const term = elements.logFilter.value.toLowerCase();
+    document.querySelectorAll('#activityLogs > div').forEach(el => {
+      el.style.display = el.textContent.toLowerCase().includes(term) ? '' : 'none';
+    });
+  }
+  ,
+  toggleTheme() {
+    const root = document.documentElement;
+    root.classList.toggle('dark');
+    const isDark = root.classList.contains('dark');
+    elements.themeIcon.classList.toggle('fa-sun', isDark);
+    elements.themeIcon.classList.toggle('fa-moon', !isDark);
+    try {
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    } catch {}
+  }
 };
 
 // Event Listeners
@@ -222,15 +322,106 @@ function setupEventListeners() {
     elements.closeSettingsBtn.addEventListener('click', handlers.toggleSettingsModal);
     elements.saveSettingsBtn.addEventListener('click', handlers.saveSettings);
     elements.interfacesList.addEventListener('click', handlers.toggleInterface);
+    elements.privacyStatusContainer.addEventListener('click', handlers.togglePrivacy);
     elements.clearLogsBtn.addEventListener('click', () => {
         elements.activityLogs.innerHTML = '';
         ui.addLogEntry('Logs cleared', 'info');
+        ui.showToast('Logs cleared', 'info');
     });
+    elements.loadLogsBtn.addEventListener('click', handlers.loadServerLogs);
+    elements.logFilter.addEventListener('input', handlers.filterLogs);
+    // Theme toggle
+    elements.themeToggleBtn.addEventListener('click', handlers.toggleTheme);
+    // Global keydown for modal ESC and focus trap
+    document.addEventListener('keydown', (e) => {
+        const modal = elements.settingsModal;
+        if (!modal.classList.contains('hidden')) {
+            if (e.key === 'Escape') {
+                handlers.toggleSettingsModal();
+            }
+            if (e.key === 'Tab') {
+                const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                if (focusable.length === 0) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault(); first.focus();
+                }
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault(); last.focus();
+                }
+            }
+        }
+    });
+}
+
+// Drag-and-Drop Section Ordering
+function saveSectionOrder() {
+  try {
+    const container = document.getElementById('dashboardContainer');
+    const ids = Array.from(container.querySelectorAll('.draggable-section')).map(el => el.id);
+    localStorage.setItem('dashboardOrder', JSON.stringify(ids));
+  } catch {}
+}
+
+function loadSectionOrder() {
+  try {
+    const container = document.getElementById('dashboardContainer');
+    const order = JSON.parse(localStorage.getItem('dashboardOrder') || '[]');
+    order.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) container.appendChild(el);
+    });
+  } catch {}
+}
+
+// Set up HTML5 drag-and-drop for sections
+function setupDragAndDrop() {
+  const container = document.getElementById('dashboardContainer');
+  let draggedId = null;
+  container.querySelectorAll('.draggable-section').forEach(section => {
+    section.addEventListener('dragstart', e => {
+      draggedId = section.id;
+      section.classList.add('opacity-50');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    section.addEventListener('dragend', () => {
+      section.classList.remove('opacity-50');
+      saveSectionOrder();
+    });
+    section.addEventListener('dragover', e => {
+      e.preventDefault();
+      section.classList.add('border-2', 'border-blue-400');
+    });
+    section.addEventListener('dragleave', () => {
+      section.classList.remove('border-2', 'border-blue-400');
+    });
+    section.addEventListener('drop', e => {
+      e.preventDefault();
+      section.classList.remove('border-2', 'border-blue-400');
+      if (draggedId && draggedId !== section.id) {
+        const draggedEl = document.getElementById(draggedId);
+        container.insertBefore(draggedEl, section);
+      }
+    });
+  });
 }
 
 // Initialize
 async function initialize() {
     setupEventListeners();
+    setupDragAndDrop();
+    loadSectionOrder();
+    // Initialize theme from localStorage or system preference
+    try {
+        const saved = localStorage.getItem('theme');
+        const useDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (useDark) {
+            document.documentElement.classList.add('dark');
+            elements.themeIcon.classList.add('fa-sun');
+            elements.themeIcon.classList.remove('fa-moon');
+        }
+    } catch {}
     await handlers.refreshData();
     
     // Refresh data periodically

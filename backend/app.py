@@ -71,6 +71,25 @@ def init_app():
     setup_logging(config)
     
     app.logger.info('PrivacyGuard Backend initialized successfully')
+    # Start automation scheduler if configured
+    try:
+        from routes import automation_manager
+        automation_manager.start()
+        app.logger.info('Automation manager started')
+    except Exception as e:
+        app.logger.error(f'Failed to start automation manager: {e}')
+    # Initialize privacy services (VPN, Proxy, Tor) based on config
+    try:
+        from routes import privacy_manager
+        for feature in ('vpn', 'proxy', 'tor'):
+            enabled = config.get(feature, {}).get('enabled', False)
+            try:
+                privacy_manager.set_enabled(feature, enabled)
+            except Exception as pe:
+                app.logger.error(f'Failed to initialize {feature}: {pe}')
+        app.logger.info('Privacy services initialized')
+    except Exception as e:
+        app.logger.error(f'Failed to initialize privacy services: {e}')
     return app
 
 if __name__ == '__main__':

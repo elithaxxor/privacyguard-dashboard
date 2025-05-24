@@ -2,17 +2,17 @@
   "preferred_interface": "Wi-Fi",
   "fallback_interface": "Cellular",
   "proxy": {
-    "enabled": false
+    "enabled": true
   },
   "vpn": {
     "enabled": true
   },
   "tor": {
-    "enabled": false
+    "enabled": true
   },
   "automation": {
-    "enabled": false,
-    "check_interval": 60
+    "enabled": true,
+    "check_interval": 63111
   },
   "logging": {
     "level": "INFO",

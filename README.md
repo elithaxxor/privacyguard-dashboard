@@ -23,6 +23,8 @@ cd backend
 pip install -r requirements.txt
 ```
 
+For comprehensive installation and deployment instructions, see `install_directions.md`.
+
 ### Running the Application
 1. Start the backend server:
 ```bash
@@ -164,3 +166,7 @@ However, consider building a native companion app for system-level operations.
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Changelog
+
+For a detailed list of changes and updates, see [CHANGELOG.md](CHANGELOG.md).

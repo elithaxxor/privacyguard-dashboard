@@ -1,0 +1,256 @@
+--- README.md
++++ README.md
+@@ -1,172 +1,109 @@
+-# PrivacyGuard - Network Privacy Dashboard
++# PrivacyGuard Dashboard
+ 
+-## Overview
+-PrivacyGuard is a comprehensive web-based dashboard for managing network privacy and routing. It provides an intuitive interface for controlling network interfaces, managing privacy tools (VPN, Proxy, Tor), and automating privacy-related tasks.
++PrivacyGuard is a web-based dashboard for managing network privacy and routing. It provides an intuitive interface for controlling network interfaces, toggling privacy services (VPN, proxy, Tor), automating privacy-related tasks, and viewing analytics reports.
+ 
+-## Quick Start
++## Features
+ 
+-### Prerequisites
+-- Python 3.8 or higher
+-- Modern web browser
+-- Root/Administrator privileges (for network interface management)
++- Discover and manage network interfaces
++- Set preferred network routes and view current routing status
++- Enable or disable network interfaces on-the-fly
++- Toggle privacy services: VPN, Proxy, Tor
++- Schedule automated privacy checks and actions
++- View recent logs and generate aggregated reports
++- Simple, responsive frontend using static HTML and JavaScript
+ 
+-### Installation
+-1. Clone or extract the project:
+-```bash
+-unzip privacyguard.zip
+-cd privacyguard
+-```
++## Repository Structure
+ 
+-2. Install Python dependencies:
+-```bash
+-cd backend
+-pip install -r requirements.txt
+ ```
+-
+-For comprehensive installation and deployment instructions, see `install_directions.md`.
+-
+-### Running the Application
+-1. Start the backend server:
+-```bash
+-python3 backend/app.py
++.
++├── backend/                  Flask backend application and API routes
++├── frontend/                 Static frontend files (HTML, JS)
++├── CHANGELOG.md             Release notes and changelog
++├── install_directions.md    Detailed installation and usage guide
++├── setup.sh                 Convenience script for setup and launch
++├── .gitignore
++└── README.md                This file
+ ```
+ 
+-2. In a new terminal, serve the frontend:
+-```bash
+-python3 -m http.server 8000 -d frontend
+-```
++## Prerequisites
+ 
+-3. Access the dashboard:
+-- Open http://localhost:8000 in your web browser
+-- Navigate to http://localhost:8000/reports.html for analytics
++- Python 3.8 or higher
++- `pip` package manager
++- (Optional) Virtual environment tool (`venv` or `virtualenv`)
++- Root/Administrator privileges (required for network interface management)
++- Modern web browser
+ 
+-## Future Development Guide
++## Installation
+ 
+-### Web-Based vs GUI Application
++1. Clone the repository:
++   ```bash
++   git clone https://github.com/<your-username>/privacyguard-dashboard.git
++   cd privacyguard-dashboard
++   ```
++2. (Optional) Create and activate a Python virtual environment:
++   ```bash
++   python3 -m venv venv
++   source venv/bin/activate
++   ```
++3. Install backend dependencies:
++   ```bash
++   cd backend
++   pip install --upgrade pip
++   pip install -r requirements.txt
++   cd ..
++   ```
++4. (Optional) Review and adjust settings in `backend/config.json` as needed.
+ 
+-#### Current Web-Based Approach
+-Pros:
+-- Platform-independent (runs in any modern browser)
+-- Easy to update and maintain (single codebase)
+-- Modern, responsive UI with Tailwind CSS
+-- Familiar web technologies (HTML, CSS, JavaScript)
+-- Easy to extend with new features
+-- Can be accessed remotely if needed
++## Running the Backend
+ 
+-Cons:
+-- Requires running two servers (backend and frontend)
+-- Browser security limitations
+-- Limited access to system-level features
+-- Requires network connectivity
++By default, the backend API server listens on port 8001.
+ 
+-#### Native GUI Alternative
+-Pros:
+-- Direct system integration
+-- Better performance
+-- More secure (no web vulnerabilities)
+-- Offline functionality
+-- Native look and feel
++```bash
++cd backend
++python3 app.py
++```
+ 
+-Cons:
+-- Platform-specific development needed
+-- More complex deployment
+-- Harder to update
+-- Limited UI framework options
++Alternatively, you can use Flask's CLI:
+ 
+-### Recommendation
+-For PrivacyGuard's use case, continuing with the web-based approach is recommended because:
+-1. Privacy tools often need remote configuration
+-2. Web technologies offer rich visualization libraries
+-3. Easy to implement real-time updates
+-4. Cross-platform compatibility is important
++```bash
++FLASK_APP=app.py FLASK_ENV=development flask run --host=0.0.0.0 --port=8001
++```
+ 
+-However, consider building a native companion app for system-level operations.
++## Running the Frontend
+ 
+-### Suggested Improvements
++Serve the static frontend files over HTTP to allow CORS requests to the backend API.
+ 
+-#### Backend Enhancements
+-1. Authentication & Authorization
+-   - Implement user accounts
+-   - Role-based access control
+-   - API key authentication
++```bash
++cd frontend
++python3 -m http.server 8000
++```
+ 
+-2. Advanced Privacy Features
+-   - DNS leak protection
+-   - Traffic analysis prevention
+-   - Custom routing rules
+-   - Network traffic monitoring
++Then open your web browser and navigate to:
+ 
+-3. Performance Optimization
+-   - Caching layer for frequent requests
+-   - WebSocket for real-time updates
+-   - Background task queue
++- Dashboard UI: http://localhost:8000
++- Reports page: http://localhost:8000/reports.html
+ 
+-#### Frontend Improvements
+-1. User Experience
+-   - Dark mode support
+-   - Customizable dashboard layouts
+-   - More interactive visualizations
+-   - Mobile-responsive design improvements
++## API Endpoints
+ 
+-2. Advanced Reporting
+-   - Export reports (PDF, CSV)
+-   - Custom date ranges
+-   - More detailed analytics
+-   - Alert configurations
++| Endpoint               | Method | Description                                |
++| ---------------------- | ------ | ------------------------------------------ |
++| `/api/interfaces`      | GET    | List available network interfaces          |
++| `/api/routing`         | GET    | Get current routing and preferred interface |
++| `/api/routing/preferred` | POST | Set preferred routing interface            |
++| `/api/interface/<name>/status` | GET | Get status of a specific interface       |
++| `/api/interface/<name>/toggle` | POST | Enable/disable a network interface       |
++| `/api/config`          | GET    | Retrieve current configuration             |
++| `/api/config`          | POST   | Update configuration and save to file      |
++| `/api/automation/status` | GET  | Get current automation status              |
++| `/api/logs`            | GET    | Fetch recent log entries                   |
++| `/api/reports`         | GET    | Generate aggregated report data            |
+ 
+-3. Privacy Tools Integration
+-   - VPN provider integrations
+-   - Tor node status monitoring
+-   - Proxy chain configuration
++## Logs and Reports
+ 
+-#### Architecture Evolution
+-1. Containerization
+-   - Docker support
+-   - Docker Compose for easy deployment
+-   - Container orchestration
++- Backend logs are stored in `backend/privacyguard.log`.
++- Use the `/api/logs` and `/api/reports` endpoints to fetch recent logs and aggregated reports programmatically.
+ 
+-2. Microservices
+-   - Split into smaller services
+-   - Independent scaling
+-   - Better fault isolation
++## Further Documentation
+ 
+-3. Security Hardening
+-   - SSL/TLS implementation
+-   - Regular security audits
+-   - Penetration testing
+-   - Secure configuration storage
++For detailed installation instructions, advanced configuration, and deployment options, see [install_directions.md](install_directions.md). For a full list of changes, see [CHANGELOG.md](CHANGELOG.md).
+ 
+-### Development Roadmap
+-1. Phase 1: Core Functionality
+-   - Complete current features
+-   - Add comprehensive testing
+-   - Improve error handling
+-
+-2. Phase 2: Enhanced Security
+-   - Implement authentication
+-   - Add encryption
+-   - Security auditing
+-
+-3. Phase 3: Advanced Features
+-   - Traffic analysis
+-   - Custom routing
+-   - Advanced automation
+-
+-4. Phase 4: Enterprise Features
+-   - Multi-user support
+-   - Team management
+-   - Audit logging
+-
+-## Contributing
+-1. Fork the repository
+-2. Create a feature branch
+-3. Commit your changes
+-4. Push to the branch
+-5. Create a Pull Request
+-
+-## License
+-This project is licensed under the MIT License - see the LICENSE file for details.
+-
+-## Changelog
+-
+-For a detailed list of changes and updates, see [CHANGELOG.md](CHANGELOG.md).

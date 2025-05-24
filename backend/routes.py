@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, current_app
 from network_manager import NetworkManager
 from automation import AutomationManager
+from privacy_manager import PrivacyManager
 from utils import ReportGenerator
 import logging
 from typing import Dict, Any
@@ -11,6 +12,7 @@ import json
 api = Blueprint('api', __name__)
 network_manager = NetworkManager()
 automation_manager = AutomationManager()
+privacy_manager = PrivacyManager()
 logger = logging.getLogger(__name__)
 
 def handle_errors(f):
@@ -40,8 +42,20 @@ def get_interfaces():
 @api.route('/routing', methods=['GET'])
 @handle_errors
 def get_routing():
-    """Get current routing information"""
+    """Get current routing information, including preferred interface IP"""
     routing_info = network_manager.get_current_routing()
+    # Determine preferred interface: use actual default route if available
+    if 'error' not in routing_info:
+        routes = routing_info.get('default_routes', []) or []
+        preferred = routes[0]['interface'] if routes else routing_info.get('preferred_interface')
+        routing_info['preferred_interface'] = preferred
+        # Include IP address of preferred interface if available
+        ip_addr = None
+        if preferred:
+            status = network_manager.check_interface_status(preferred)
+            if status and not status.get('error'):
+                ip_addr = status.get('ipv4_address')
+        routing_info['ip_address'] = ip_addr
     return jsonify({
         'routing': routing_info,
         'status': 'success'
@@ -139,7 +153,21 @@ def update_config():
         # Save to file
         with open('config.json', 'w') as f:
             json.dump(current_config, f, indent=2)
-
+        # Propagate new configuration in-memory
+        try:
+            network_manager.config = current_config
+            automation_cfg = current_config.get('automation', {})
+            automation_manager.update_config(automation_cfg)
+            # Toggle privacy features (VPN, Proxy, Tor)
+            privacy_manager.config = current_config
+            for feature in ('vpn', 'proxy', 'tor'):
+                enabled = current_config.get(feature, {}).get('enabled', False)
+                try:
+                    privacy_manager.set_enabled(feature, enabled)
+                except Exception as ex:
+                    logger.error(f"Error toggling {feature}: {ex}")
+        except Exception as ex:
+            logger.error(f"Error propagating config changes: {ex}")
         return jsonify({
             'message': 'Configuration updated successfully',
             'status': 'success'

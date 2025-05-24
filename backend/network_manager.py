@@ -1,8 +1,10 @@
 import netifaces
 import logging
+import sys
 from pyroute2 import IPRoute
 from typing import Dict, List, Optional
 import subprocess
+import platform
 import json
 
 logger = logging.getLogger(__name__)
@@ -10,8 +12,12 @@ logger = logging.getLogger(__name__)
 class NetworkManager:
     def __init__(self, config_path: str = 'config.json'):
         self.config = self._load_config(config_path)
-        self.ip = IPRoute()
         self._setup_logging()
+        try:
+            self.ip = IPRoute()
+        except Exception as e:
+            logger.warning(f"Could not initialize IPRoute: {e}. Network operations disabled.")
+            self.ip = None
 
     def _load_config(self, config_path: str) -> dict:
         """Load configuration from JSON file."""
@@ -35,6 +41,25 @@ class NetworkManager:
         Get a list of available network interfaces with their details.
         Returns a list of dictionaries containing interface information.
         """
+        if self.ip is None:
+            logger.warning("get_available_interfaces: IPRoute not available; using fallback via netifaces.")
+            interfaces = []
+            for iface in netifaces.interfaces():
+                try:
+                    addrs = netifaces.ifaddresses(iface)
+                    ipv4 = addrs.get(netifaces.AF_INET, [])
+                    ipv4_addr = ipv4[0]['addr'] if ipv4 else None
+                    mac_addr = addrs.get(netifaces.AF_LINK, [{}])[0].get('addr')
+                    interfaces.append({
+                        'name': iface,
+                        'ipv4_address': ipv4_addr,
+                        'is_up': None,
+                        'type': 'Unknown',
+                        'mac_address': mac_addr
+                    })
+                except Exception as e:
+                    logger.error(f"Error getting details for interface {iface}: {e}")
+            return interfaces
         try:
             interfaces = []
             for iface in netifaces.interfaces():
@@ -100,11 +125,12 @@ class NetworkManager:
             # Get interface index
             idx = self.ip.link_lookup(ifname=interface_name)[0]
 
-            # Set interface as default route
-            self.ip.route('add', 
-                         dst='default', 
-                         oif=idx,
-                         priority=100)
+            # Replace default route to use this interface
+            # This will remove any existing default route and add the new one
+            self.ip.route('replace',
+                          dst='default',
+                          oif=idx,
+                          priority=100)
 
             logger.info(f"Successfully set {interface_name} as preferred routing interface")
             return True
@@ -118,6 +144,12 @@ class NetworkManager:
         Get current routing information.
         Returns a dictionary with routing details.
         """
+        if self.ip is None:
+            logger.warning("get_current_routing: IPRoute not available; returning empty routing info.")
+            return {
+                'default_routes': [],
+                'preferred_interface': self.config.get('preferred_interface')
+            }
         try:
             routes = []
             for route in self.ip.route('show'):
@@ -143,6 +175,24 @@ class NetworkManager:
         Check the status of a specific interface.
         Returns a dictionary with interface status details.
         """
+        if self.ip is None:
+            logger.warning("check_interface_status: IPRoute not available; using fallback via netifaces.")
+            try:
+                if interface_name not in netifaces.interfaces():
+                    raise ValueError(f"Interface {interface_name} does not exist")
+                addrs = netifaces.ifaddresses(interface_name)
+                ipv4_addr = addrs.get(netifaces.AF_INET, [{}])[0].get('addr')
+                mac_addr = addrs.get(netifaces.AF_LINK, [{}])[0].get('addr')
+                return {
+                    'name': interface_name,
+                    'is_up': None,
+                    'ipv4_address': ipv4_addr,
+                    'mac_address': mac_addr,
+                    'type': self._determine_interface_type(interface_name)
+                }
+            except Exception as fallback_e:
+                logger.error(f"Error checking interface status fallback: {fallback_e}")
+                return {'error': str(fallback_e)}
         try:
             if interface_name not in netifaces.interfaces():
                 raise ValueError(f"Interface {interface_name} does not exist")
@@ -169,17 +219,20 @@ class NetworkManager:
         try:
             if interface_name not in netifaces.interfaces():
                 raise ValueError(f"Interface {interface_name} does not exist")
-
             state = "up" if enable else "down"
-            result = subprocess.run(['ip', 'link', 'set', interface_name, state],
-                                 capture_output=True, text=True)
-            
+            system = platform.system()
+            if system == 'Linux':
+                cmd = ['ip', 'link', 'set', interface_name, state]
+            elif system == 'Darwin':
+                cmd = ['ifconfig', interface_name, state]
+            else:
+                raise Exception(f"Unsupported OS: {system}, cannot toggle interface")
+            result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode == 0:
                 logger.info(f"Successfully set interface {interface_name} {state}")
                 return True
             else:
                 raise Exception(f"Failed to set interface {state}: {result.stderr}")
-                
         except Exception as e:
             logger.error(f"Error toggling interface: {str(e)}")
             return False

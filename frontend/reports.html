@@ -7,6 +7,8 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- i18n -->
+    <script src="i18n.js"></script>
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -25,17 +27,20 @@
 </head>
 <body class="bg-gray-50">
     <!-- Navigation -->
-    <nav class="bg-white shadow-lg">
+    <nav class="bg-white shadow-lg" role="navigation" aria-label="Main navigation">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <a href="index.html" class="flex items-center">
                         <i class="fas fa-shield-alt text-blue-600 text-2xl mr-2"></i>
-                        <span class="font-bold text-xl text-gray-800">PrivacyGuard</span>
+                        <span class="font-bold text-xl text-gray-800" data-i18n="brand"></span>
                     </a>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button id="refreshBtn" class="text-gray-600 hover:text-blue-600">
+                    <select id="langSelect" class="bg-transparent border-none text-gray-600 focus:outline-none">
+                        <option value="en">English</option>
+                    </select>
+                    <button id="refreshBtn" class="text-gray-600 hover:text-blue-600" aria-label="Refresh Reports">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                 </div>
@@ -60,7 +65,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Network Events</h3>
+                    <h3 class="text-lg font-semibold text-gray-800" data-i18n="reports.networkEvents.title"></h3>
                     <i class="fas fa-network-wired text-blue-600"></i>
                 </div>
                 <div class="text-3xl font-bold text-gray-900" id="totalNetworkEvents">-</div>
@@ -69,7 +74,7 @@
             
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Privacy Events</h3>
+                    <h3 class="text-lg font-semibold text-gray-800" data-i18n="reports.privacyEvents.title"></h3>
                     <i class="fas fa-user-shield text-blue-600"></i>
                 </div>
                 <div class="text-3xl font-bold text-gray-900" id="totalPrivacyEvents">-</div>
@@ -78,7 +83,7 @@
             
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Automation Events</h3>
+                    <h3 class="text-lg font-semibold text-gray-800" data-i18n="reports.automationEvents.title"></h3>
                     <i class="fas fa-robot text-blue-600"></i>
                 </div>
                 <div class="text-3xl font-bold text-gray-900" id="totalAutomationEvents">-</div>
@@ -90,7 +95,7 @@
         <div class="space-y-8">
             <!-- Network Activity Chart -->
             <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Network Activity Timeline</h2>
+                <h2 class="text-xl font-semibold text-gray-800 mb-4" data-i18n="reports.networkChart.title"></h2>
                 <div class="relative w-full bg-white p-4 rounded-lg" style="min-height: 300px;">
                     <canvas id="networkChart" class="w-full h-full"></canvas>
                 </div>
@@ -98,7 +103,7 @@
 
             <!-- Privacy Events Chart -->
             <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Privacy Events Distribution</h2>
+                <h2 class="text-xl font-semibold text-gray-800 mb-4" data-i18n="reports.privacyChart.title"></h2>
                 <div class="relative w-full bg-white p-4 rounded-lg" style="min-height: 300px;">
                     <canvas id="privacyChart" class="w-full h-full"></canvas>
                 </div>
@@ -106,7 +111,7 @@
 
             <!-- Automation Summary Chart -->
             <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Automation Rule Executions</h2>
+                <h2 class="text-xl font-semibold text-gray-800 mb-4" data-i18n="reports.automationChart.title"></h2>
                 <div class="relative w-full bg-white p-4 rounded-lg" style="min-height: 300px;">
                     <canvas id="automationChart" class="w-full h-full"></canvas>
                 </div>
@@ -115,6 +120,21 @@
     </main>
 
     <!-- Scripts -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const preferred = localStorage.getItem('locale') || 'en';
+        i18n.load(preferred);
+        const sel = document.getElementById('langSelect');
+        if (sel) {
+          sel.value = preferred;
+          sel.addEventListener('change', e => {
+            const loc = e.target.value;
+            localStorage.setItem('locale', loc);
+            i18n.load(loc);
+          });
+        }
+      });
+    </script>
     <script src="reports.js"></script>
 </body>
 </html>

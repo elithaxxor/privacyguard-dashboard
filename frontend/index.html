@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PrivacyGuard - Network Privacy Dashboard</title>
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS with dark mode support -->
+    <script>
+      tailwind.config = { darkMode: 'class' }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Google Fonts -->
@@ -13,6 +16,8 @@
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- i18n -->
+    <script src="i18n.js"></script>
     
     <style>
         body {
@@ -20,24 +25,30 @@
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
     <!-- Navigation -->
-    <nav class="bg-white shadow-lg">
+    <nav class="bg-white dark:bg-gray-800 shadow-lg" role="navigation" aria-label="Main navigation">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <i class="fas fa-shield-alt text-blue-600 text-2xl mr-2"></i>
-                    <span class="font-bold text-xl text-gray-800">PrivacyGuard</span>
+                    <span class="font-bold text-xl text-gray-800 dark:text-gray-100" data-i18n="brand"></span>
                 </div>
                 <div class="flex items-center space-x-4">
+                    <select id="langSelect" class="bg-transparent border-none text-gray-600 dark:text-gray-300 focus:outline-none">
+                        <option value="en">English</option>
+                    </select>
                     <a href="reports.html" class="text-gray-600 hover:text-blue-600">
                         <i class="fas fa-chart-line mr-1"></i>
-                        Reports
+                        <span data-i18n="nav.reports"></span>
                     </a>
-                    <button id="refreshBtn" class="text-gray-600 hover:text-blue-600">
+                    <button id="refreshBtn" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400" aria-label="Refresh Dashboard">
                         <i class="fas fa-sync-alt"></i>
                     </button>
-                    <button id="settingsBtn" class="text-gray-600 hover:text-blue-600">
+                    <button id="themeToggleBtn" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 mr-4" aria-label="Toggle Dark Mode">
+                        <i class="fas fa-moon" id="themeIcon"></i>
+                    </button>
+                    <button id="settingsBtn" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400" aria-label="Open Settings">
                         <i class="fas fa-cog"></i>
                     </button>
                 </div>
@@ -46,13 +57,13 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 py-6">
+    <div id="dashboardContainer" class="max-w-7xl mx-auto px-4 py-6">
         <!-- Status Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+        <div id="section-status" class="draggable-section grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6" draggable="true">
             <!-- Network Status Card -->
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Network Status</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100" data-i18n="section.networkStatus.title"></h3>
                     <i class="fas fa-network-wired text-blue-600"></i>
                 </div>
                 <div id="networkStatus" class="space-y-3">
@@ -68,31 +79,43 @@
             </div>
 
             <!-- Privacy Status Card -->
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Privacy Status</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100" data-i18n="section.privacyStatus.title"></h3>
                     <i class="fas fa-user-shield text-blue-600"></i>
                 </div>
                 <div id="privacyStatus" class="space-y-3">
                     <div class="flex items-center justify-between">
                         <span class="text-gray-600">VPN Status:</span>
-                        <span id="vpnStatus" class="font-medium">Disabled</span>
+                        <div class="flex items-center space-x-2">
+                            <span id="vpnStatus" class="font-medium">Disabled</span>
+                            <button class="toggle-privacy px-3 py-1 rounded-md bg-green-100 text-green-600"
+                                    data-feature="vpn" data-action="enable">Enable</button>
+                        </div>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-gray-600">Proxy Status:</span>
-                        <span id="proxyStatus" class="font-medium">Disabled</span>
+                        <div class="flex items-center space-x-2">
+                            <span id="proxyStatus" class="font-medium">Disabled</span>
+                            <button class="toggle-privacy px-3 py-1 rounded-md bg-green-100 text-green-600"
+                                    data-feature="proxy" data-action="enable">Enable</button>
+                        </div>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-gray-600">Tor Status:</span>
-                        <span id="torStatus" class="font-medium">Disabled</span>
+                        <div class="flex items-center space-x-2">
+                            <span id="torStatus" class="font-medium">Disabled</span>
+                            <button class="toggle-privacy px-3 py-1 rounded-md bg-green-100 text-green-600"
+                                    data-feature="tor" data-action="enable">Enable</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Automation Status Card -->
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Automation</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100" data-i18n="section.automation.title"></h3>
                     <i class="fas fa-robot text-blue-600"></i>
                 </div>
                 <div id="automationStatus" class="space-y-3">
@@ -109,11 +132,11 @@
         </div>
 
         <!-- Network Interfaces -->
-        <div class="bg-white rounded-lg shadow mb-6">
+        <div id="section-interfaces" class="draggable-section bg-white dark:bg-gray-800 rounded-lg shadow mb-6" draggable="true">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Network Interfaces</h3>
-                    <button id="addInterfaceBtn" class="text-blue-600 hover:text-blue-700">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100" data-i18n="section.networkInterfaces.title"></h3>
+                    <button id="addInterfaceBtn" class="text-blue-600 hover:text-blue-700" aria-label="Add Interface">
                         <i class="fas fa-plus"></i>
                     </button>
                 </div>
@@ -124,15 +147,21 @@
         </div>
 
         <!-- Activity Logs -->
-        <div class="bg-white rounded-lg shadow">
+        <div id="section-logs" class="draggable-section bg-white dark:bg-gray-800 rounded-lg shadow" draggable="true">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Activity Logs</h3>
-                    <button id="clearLogsBtn" class="text-gray-600 hover:text-red-600">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100" data-i18n="section.activityLogs.title"></h3>
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="logFilter" placeholder="Filter logs..." class="form-input px-2 py-1 border border-gray-300 rounded-md text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" aria-label="Filter Logs" />
+                        <button id="loadLogsBtn" class="text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400" aria-label="Load Server Logs">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button id="clearLogsBtn" class="text-gray-600 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400" aria-label="Clear Logs">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
                 </div>
-                <div id="activityLogs" class="space-y-2 max-h-60 overflow-y-auto">
+                <div id="activityLogs" class="space-y-2 max-h-60 overflow-y-auto font-mono text-sm break-words">
                     <!-- Logs will be populated here -->
                 </div>
             </div>
@@ -140,11 +169,12 @@
     </div>
 
     <!-- Settings Modal -->
-    <div id="settingsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800" tabindex="-1">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold text-gray-800">Settings</h3>
-                <button id="closeSettingsBtn" class="text-gray-600 hover:text-gray-800">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100" id="settingsTitle" data-i18n="settings.title"></h3>
+                <button id="closeSettingsBtn" class="text-gray-600 hover:text-gray-800" aria-label="Close Settings">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -153,10 +183,10 @@
                 <div>
                     <label class="flex items-center space-x-3 mb-3">
                         <input type="checkbox" id="automationEnabled" class="form-checkbox h-5 w-5 text-blue-600">
-                        <span class="text-gray-700 font-medium">Enable Automation</span>
+                        <span class="text-gray-700 font-medium" data-i18n="settings.automation"></span>
                     </label>
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-medium mb-2">Check Interval (seconds)</label>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" data-i18n="settings.checkInterval"></label>
                         <input type="number" id="checkInterval" class="form-input w-full rounded-md border-gray-300" value="60">
                     </div>
                 </div>
@@ -166,27 +196,45 @@
                     <h4 class="font-medium text-gray-700 mb-2">Privacy Settings</h4>
                     <label class="flex items-center space-x-3 mb-3">
                         <input type="checkbox" id="vpnEnabled" class="form-checkbox h-5 w-5 text-blue-600">
-                        <span class="text-gray-700">Enable VPN</span>
+                        <span class="text-gray-700" data-i18n="settings.vpn"></span>
                     </label>
                     <label class="flex items-center space-x-3 mb-3">
                         <input type="checkbox" id="proxyEnabled" class="form-checkbox h-5 w-5 text-blue-600">
-                        <span class="text-gray-700">Enable Proxy</span>
+                        <span class="text-gray-700" data-i18n="settings.proxy"></span>
                     </label>
                     <label class="flex items-center space-x-3">
                         <input type="checkbox" id="torEnabled" class="form-checkbox h-5 w-5 text-blue-600">
-                        <span class="text-gray-700">Enable Tor</span>
+                        <span class="text-gray-700" data-i18n="settings.tor"></span>
                     </label>
                 </div>
             </div>
             <div class="mt-6">
-                <button id="saveSettingsBtn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200">
-                    Save Changes
+                <button id="saveSettingsBtn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200" aria-label="Save Settings">
+                    <span data-i18n="settings.save"></span>
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="fixed top-4 right-4 space-y-2 z-50"></div>
     <!-- Scripts -->
+    <script>
+      // Initialize i18n before main script
+      document.addEventListener('DOMContentLoaded', () => {
+        const preferred = localStorage.getItem('locale') || 'en';
+        i18n.load(preferred);
+        const sel = document.getElementById('langSelect');
+        if (sel) {
+          sel.value = preferred;
+          sel.addEventListener('change', e => {
+            const loc = e.target.value;
+            localStorage.setItem('locale', loc);
+            i18n.load(loc);
+          });
+        }
+      });
+    </script>
     <script src="script.js"></script>
 </body>
 </html>

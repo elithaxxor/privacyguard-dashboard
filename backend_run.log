@@ -1,0 +1,8 @@
+python3: warning: confstr() failed with code 5: couldn't get path of DARWIN_USER_TEMP_DIR; using /tmp instead
+python3: error: couldn't create cache file '/tmp/xcrun_db-nz1TfUIJ' (errno=Operation not permitted)
+python3: warning: confstr() failed with code 5: couldn't get path of DARWIN_USER_TEMP_DIR; using /tmp instead
+python3: error: couldn't create cache file '/tmp/xcrun_db-KuDhIzqq' (errno=Operation not permitted)
+Traceback (most recent call last):
+  File "/Users/a-robot/Downloads/privacyguard-dashboard-main/backend/app.py", line 1, in <module>
+    from flask import Flask, jsonify
+ModuleNotFoundError: No module named 'flask'
